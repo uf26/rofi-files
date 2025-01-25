@@ -42,11 +42,11 @@ void assure_base_end_with_slash(char* base_dir) {
 }
 
 void load_config(MYPLUGINModePrivateData* pd) {
-    if (!find_arg_str("-base-dir", &(pd->base_dir)))
+    if (!find_arg_str("-files-base-dir", &(pd->base_dir)))
         pd->base_dir = g_strdup(getenv("HOME"));
     assure_base_end_with_slash(pd->base_dir);
 
-    if(!find_arg_str("-ignore-path", &(pd->ignore_path)))
+    if(!find_arg_str("-files-ignore-path", &(pd->ignore_path)))
         pd->ignore_path = NULL;
 }
 
