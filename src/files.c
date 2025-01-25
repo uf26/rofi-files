@@ -222,6 +222,7 @@ static void files_mode_destroy(Mode *sw)
 
         g_free(pd->array);
         g_free(pd->base_dir);
+        g_free(pd->ignore_path);
 
         g_mutex_unlock(&pd->mutex);
         g_mutex_clear(&pd->mutex);
