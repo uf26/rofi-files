@@ -34,20 +34,28 @@ typedef struct {
 
 extern void rofi_view_reload(void);
 
-void assure_base_end_with_slash(char* base_dir) {
+char* assure_base_end_with_slash(char* base_dir) {
     if (base_dir[strlen(base_dir) - 1] != '/') {
         base_dir = g_realloc(base_dir, strlen(base_dir) + 2);
         strcat(base_dir, "/");
     }
+    return base_dir;
 }
 
 void load_config(MYPLUGINModePrivateData* pd) {
-    if (!find_arg_str("-files-base-dir", &(pd->base_dir)))
-        pd->base_dir = g_strdup(getenv("HOME"));
-    assure_base_end_with_slash(pd->base_dir);
+    char* temp = NULL;
 
-    if(!find_arg_str("-files-ignore-path", &(pd->ignore_path)))
+    if (!find_arg_str("-files-base-dir", &temp))
+        pd->base_dir = g_strdup(getenv("HOME"));
+    else {
+        pd->base_dir = g_strdup(temp);
+        pd->base_dir = assure_base_end_with_slash(pd->base_dir);
+    }
+
+    if(!find_arg_str("-files-ignore-path", &temp))
         pd->ignore_path = NULL;
+    else
+        pd->ignore_path = g_strdup(temp);
 }
 
 void remove_newline(char* str) {
