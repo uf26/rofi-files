@@ -128,7 +128,6 @@ void load_files(MYPLUGINModePrivateData* pd) {
         pd->array[pd->array_length].icon = icon_name;
         pd->array_length++;
         g_mutex_unlock(&pd->mutex);
-        // sleep(1);
 
         rofi_view_reload();
     }
@@ -266,15 +265,6 @@ static cairo_surface_t* file_get_icon(const Mode *sw, unsigned int selected_line
     return NULL;
 }
 
-/**
- * @param sw The mode object.
- * @param tokens The tokens to match against.
- * @param index  The index in this plugin to match against.
- *
- * Match the entry.
- *
- * @param returns try when a match.
- */
 static int files_token_match(const Mode *sw, rofi_int_matcher **tokens, unsigned int index)
 {
     MYPLUGINModePrivateData *pd = (MYPLUGINModePrivateData *)mode_get_private_data(sw);
