@@ -186,9 +186,9 @@ void action(MYPLUGINModePrivateData *pd, unsigned int selected_line, bool alt) {
 
         char command[1024];
         if (!alt && g_file_test(full_path, G_FILE_TEST_IS_DIR))
-            snprintf(command, sizeof(command), "alacritty -e nvim %s &", full_path);
+            snprintf(command, sizeof(command), "gtk-launch nvim \"%s\" &", full_path);
         else
-            snprintf(command, sizeof(command), "gio open %s &", full_path);
+            snprintf(command, sizeof(command), "gio open \"%s\" &", full_path);
 
         system(command);
         g_free(full_path);
