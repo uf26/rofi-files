@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Define the build directory
 BUILD_DIR="build"
 
