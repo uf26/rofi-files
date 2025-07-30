@@ -1,4 +1,6 @@
 build/
+result
+result/
 *.m4
 configure
 config.*

@@ -53,6 +53,9 @@ PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.40 gio-unix-2.0 gmodule-2.0])
 PKG_CHECK_MODULES([rofi], [rofi])
 PKG_CHECK_MODULES([gtk], [gtk+-3.0 >= 3.0]) dnl Add GTK dependency here
 
+[rofi_PLUGIN_INSTALL_DIR]="`echo $out/lib/rofi`"
+AC_SUBST([rofi_PLUGIN_INSTALL_DIR])
+
 LT_INIT([disable-static])
 
 dnl ---------------------------------------------------------------------

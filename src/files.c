@@ -35,9 +35,11 @@ typedef struct {
 extern void rofi_view_reload(void);
 
 char* assure_base_end_with_slash(char* base_dir) {
-    if (base_dir[strlen(base_dir) - 1] != '/') {
-        base_dir = g_realloc(base_dir, strlen(base_dir) + 2);
-        strcat(base_dir, "/");
+    size_t len = strlen(base_dir);
+    if (base_dir[len - 1] != '/') {
+        base_dir = g_realloc(base_dir, len + 2);
+        base_dir[len] = '/';
+        base_dir[len + 1] = '\0'; 
     }
     return base_dir;
 }
@@ -45,17 +47,17 @@ char* assure_base_end_with_slash(char* base_dir) {
 void load_config(MYPLUGINModePrivateData* pd) {
     char* temp = NULL;
 
-    if (!find_arg_str("-files-base-dir", &temp))
-        pd->base_dir = g_strdup(getenv("HOME"));
-    else {
-        pd->base_dir = g_strdup(temp);
-        pd->base_dir = assure_base_end_with_slash(pd->base_dir);
+    if (!find_arg_str("-files-base-dir", &temp)) {
+        pd->base_dir = assure_base_end_with_slash(g_strdup(getenv("HOME")));
+    } else {
+        pd->base_dir = assure_base_end_with_slash(g_strdup(temp));
     }
 
-    if(!find_arg_str("-files-ignore-path", &temp))
-        pd->ignore_path = NULL;
-    else
+    if (!find_arg_str("-files-ignore-path", &temp)) {
+        pd->ignore_path = g_strconcat(pd->base_dir, ".config/rofi/files_ignore.txt", NULL);
+    } else {
         pd->ignore_path = g_strdup(temp);
+    }
 }
 
 void remove_newline(char* str) {

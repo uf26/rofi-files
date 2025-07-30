@@ -1,31 +1,27 @@
 {
-  description = "Development environment for rofi power";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs, ... }: {
-    devShells.x86_64-linux.default =
-      let
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in
-      pkgs.mkShell { 
+  outputs = { self, nixpkgs, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      package = self.packages.${system}.default;
+      packages.${system}.default = pkgs.stdenv.mkDerivation {
+        pname = "rofi-files";
+        version = "1.0";
+        src = ./.;
         buildInputs = with pkgs; [
-          cmake
-          gnumake
-          gcc
+          autoreconfHook
           pkg-config
-          autoconf
-          bear
-          automake
-          libtool
-
+          gobject-introspection
+          wrapGAppsHook3
+	  rofi-unwrapped
           glib
-          rofi
-          cairo.dev
-          gtk3
+          cairo
         ];
       };
-  };
+    };
 }
