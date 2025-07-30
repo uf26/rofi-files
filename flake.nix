@@ -21,6 +21,7 @@
 	  rofi-unwrapped
           glib
           cairo
+	  bear
         ];
       };
     };

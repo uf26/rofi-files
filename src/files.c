@@ -187,7 +187,7 @@ void action(MYPLUGINModePrivateData *pd, unsigned int selected_line, bool alt) {
         char* full_path = get_full_path(pd->array[selected_line].name, pd->base_dir);
 
         char command[1024];
-        if (!alt && g_file_test(full_path, G_FILE_TEST_IS_DIR))
+        if (alt && g_file_test(full_path, G_FILE_TEST_IS_DIR))
             snprintf(command, sizeof(command), "gtk-launch nvim \"%s\" &", full_path);
         else
             snprintf(command, sizeof(command), "gio open \"%s\" &", full_path);

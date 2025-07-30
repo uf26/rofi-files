@@ -24,6 +24,7 @@ echo "Running configure..."
 ../configure
 
 echo "Building the project..."
+make
 bear -- make
 cp compile_commands.json ../
 
