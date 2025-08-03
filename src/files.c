@@ -252,7 +252,7 @@ void action(MYPLUGINModePrivateData *pd, unsigned int selected_line, bool alt) {
     if (selected_line < pd->array_length) {
         char* full_path = get_full_path(pd->array[selected_line].name, pd->base_dir);
 
-        if (alt && g_file_test(full_path, G_FILE_TEST_IS_DIR))
+        if (alt)
             launch_with_editor(full_path);
         else
             launch_with_default(full_path);
