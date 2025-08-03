@@ -34,6 +34,52 @@ typedef struct {
 
 extern void rofi_view_reload(void);
 
+bool launch_with_editor(const char* path)
+{
+    // gtk-launch $EDITOR:-nvim {path}
+
+    const char* editor = getenv("EDITOR");
+    if (!editor || editor[0] == '\0')
+        editor = "nvim"; 
+
+    char* argv[] = {
+        "gtk-launch", (char*)editor, (char*)path, NULL
+    };
+
+    GError* error = NULL;
+    GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
+    if (!g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)) {
+        g_printerr("Failed to launch editor: %s\n", error->message);
+        g_error_free(error);
+        return false;
+    } 
+    return true;
+}
+
+bool launch_with_default(const char* path)
+{
+    // gio open {path}
+
+    GError* error = NULL;
+    char* uri = g_filename_to_uri(path, NULL, &error);
+    if (!uri) {
+        g_printerr("Failed to convert path to URI: %s\n", error->message);
+        g_error_free(error);
+        return false;
+    }
+
+    gboolean success = g_app_info_launch_default_for_uri(uri, NULL, &error);
+    g_free(uri);
+
+    if (!success) {
+        g_printerr("Failed to launch default app for '%s': %s\n", path, error->message);
+        g_error_free(error);
+        return false;
+    }
+
+    return true;
+}
+
 char* assure_base_end_with_slash(char* base_dir) {
     size_t len = strlen(base_dir);
     if (base_dir[len - 1] != '/') {
@@ -54,7 +100,7 @@ void load_config(MYPLUGINModePrivateData* pd) {
     }
 
     if (!find_arg_str("-files-ignore-path", &temp)) {
-        pd->ignore_path = g_strconcat(pd->base_dir, ".config/rofi/files_ignore.txt", NULL);
+        pd->ignore_path = NULL;
     } else {
         pd->ignore_path = g_strdup(temp);
     }
@@ -186,13 +232,11 @@ void action(MYPLUGINModePrivateData *pd, unsigned int selected_line, bool alt) {
     if (selected_line < pd->array_length) {
         char* full_path = get_full_path(pd->array[selected_line].name, pd->base_dir);
 
-        char command[1024];
         if (alt && g_file_test(full_path, G_FILE_TEST_IS_DIR))
-            snprintf(command, sizeof(command), "gtk-launch nvim \"%s\" &", full_path);
+            launch_with_editor(full_path);
         else
-            snprintf(command, sizeof(command), "gio open \"%s\" &", full_path);
+            launch_with_default(full_path);
 
-        system(command);
         g_free(full_path);
     }
     g_mutex_unlock(&pd->mutex);
