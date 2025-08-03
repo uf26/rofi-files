@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 #include <stdbool.h>
+#include <gio/gdesktopappinfo.h>
 
 #include <rofi/mode.h>
 #include <rofi/helper.h>
@@ -34,32 +35,51 @@ typedef struct {
 
 extern void rofi_view_reload(void);
 
+bool gtk_launch(const char* app_name, const char* path)
+{
+    GAppInfo* info = G_APP_INFO(g_desktop_app_info_new(app_name));
+    if (!info) {
+        g_printerr("%s: error creating app info for '%s'\n", g_get_prgname(), app_name);
+        return false;
+    }
+
+    GFile *f = g_file_new_for_commandline_arg(path);
+    GList *l = g_list_append(NULL, f);
+
+    GError *error = NULL;
+    if (!g_app_info_launch(info, l, NULL, &error)) {
+        g_printerr("%s: error launching application: %s\n", g_get_prgname(), error->message);
+        g_error_free(error);
+        g_object_unref(info);
+        g_list_free_full(l, (GDestroyNotify)g_object_unref);
+        return false;
+    }
+
+    g_object_unref(info);
+    g_list_free_full(l, (GDestroyNotify)g_object_unref);
+
+    return true;
+}
+
 bool launch_with_editor(const char* path)
 {
-    // gtk-launch $EDITOR:-nvim {path}
+    const char* app_name = getenv("EDITOR");
+    if (!app_name || app_name[0] == '\0')
+        app_name = "nvim";
 
-    const char* editor = getenv("EDITOR");
-    if (!editor || editor[0] == '\0')
-        editor = "nvim"; 
+    char* desktop_file_name = NULL;
+    if (g_str_has_suffix(app_name, ".desktop"))
+        desktop_file_name = g_strdup(app_name);
+    else 
+        desktop_file_name = g_strconcat(app_name, ".desktop", NULL);
 
-    char* argv[] = {
-        "gtk-launch", (char*)editor, (char*)path, NULL
-    };
-
-    GError* error = NULL;
-    GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
-    if (!g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)) {
-        g_printerr("Failed to launch editor: %s\n", error->message);
-        g_error_free(error);
-        return false;
-    } 
-    return true;
+    bool success = gtk_launch(desktop_file_name, path);
+    g_free(desktop_file_name);
+    return success;
 }
 
 bool launch_with_default(const char* path)
 {
-    // gio open {path}
-
     GError* error = NULL;
     char* uri = g_filename_to_uri(path, NULL, &error);
     if (!uri) {
